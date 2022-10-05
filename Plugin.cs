@@ -2,18 +2,21 @@
 using BepInEx.Configuration;
 using HarmonyLib;
 
-namespace MyFirstPlugin
+namespace NGUnidle
 {
     public static class Settings
     {
         private static ConfigEntry<float> configTimeMulti;
         private static ConfigEntry<float> configBossMulti;
+        private static ConfigEntry<float> configBossExpDiv;
         private static ConfigEntry<float> configWandoosMulti;
         private static ConfigEntry<float> configYggdrasil;
         private static ConfigEntry<bool> configAdvTraining;
 
         public static float timeMulti => configTimeMulti.Value;
         public static float bossMulti => configBossMulti.Value;
+        public static float bossExpDiv => configBossExpDiv.Value;
+
         public static float wandoosMulti => configWandoosMulti.Value;
         public static float yggdrasil => configYggdrasil.Value;
         public static bool advTraining => configAdvTraining.Value;
@@ -31,6 +34,12 @@ namespace MyFirstPlugin
                 "BossMulti",
                 4.0f,
                 "Multiplies the respawn speed of bosses");
+
+            Settings.configBossExpDiv = Config.Bind(
+                "Multipliers",
+                "BossExpDiv",
+                3.0f,
+                "Reduces the exp from bosses by this factor");
 
             Settings.configWandoosMulti = Config.Bind(
                 "Multipliers",
@@ -60,7 +69,8 @@ namespace MyFirstPlugin
         {
             Settings.InitSettings(Config);
             Logger.LogInfo($"Plugin {PluginInfo.PLUGIN_GUID} is loaded!");
-            Harmony.CreateAndPatchAll(typeof(Plugin));
+            var har = Harmony.CreateAndPatchAll(typeof(Plugin));
+            har.PatchAll(typeof(BossPatches));
         }
 
         /// Increase time multiplier speed
@@ -88,32 +98,6 @@ namespace MyFirstPlugin
         static void PatchTimeMultiPostfix(Rebirth __instance, double __state)
         {
             __instance.character.rebirthTime.setTime(__state);
-        }
-
-        /// Increase GRB respawn speed
-        [HarmonyPatch(typeof(AdventureController), "boss1SpawnTime")]
-        [HarmonyPrefix]
-        static bool PatchBoss1(ref float __result)
-        {
-            __result = 3600f / Settings.bossMulti;
-            return false;
-        }
-
-        /// Increase GCT respawn speed
-        [HarmonyPatch(typeof(AdventureController), "boss2SpawnTime")]
-        [HarmonyPrefix]
-        static bool PatchBoss2(ref float __result)
-        {
-            __result = 3600f / Settings.bossMulti;
-            return false;
-        }
-
-        /// Increase boss 3 respawn speed
-        [HarmonyPatch(typeof(AdventureController), "boss3SpawnTime")]
-        [HarmonyPostfix]
-        static void PatchBoss3(ref float __result)
-        {
-            __result = __result / Settings.bossMulti;
         }
 
         /// Increase wandoos bootup speed
