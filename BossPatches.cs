@@ -44,6 +44,15 @@ namespace NGUnidle
         {
             __result = __result / Settings.bossMulti;
         }
+
+        /// Increase boss 6 respawn speed
+        [HarmonyPatch(typeof(AdventureController), "boss6SpawnTime")]
+        [HarmonyPostfix]
+        static void PatchBoss6(ref float __result)
+        {
+            __result = __result / Settings.bossMulti;
+        }
+
         /// Decrease GRB exp
         [HarmonyPatch(typeof(AdventureController), "boss1Exp")]
         [HarmonyPostfix]
@@ -82,6 +91,14 @@ namespace NGUnidle
         [HarmonyPatch(typeof(AdventureController), "boss5Exp")]
         [HarmonyPostfix]
         static void PatchBoss5Exp(ref long __result)
+        {
+            __result = Convert.ToInt64(__result / Settings.bossExpDiv);
+        }
+
+        /// Decrease boss 6 exp
+        [HarmonyPatch(typeof(AdventureController), "boss6Exp")]
+        [HarmonyPostfix]
+        static void PatchBoss6Exp(ref long __result)
         {
             __result = Convert.ToInt64(__result / Settings.bossExpDiv);
         }
